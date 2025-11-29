@@ -1,69 +1,54 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Button } from "../components/ui/button";
-
-const schema = z.object({
-  username: z.string().min(3, "Username phải có ít nhất 3 ký tự"),
-  name: z.string().min(2, "Name phải có ít nhất 2 ký tự"),
-  email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(4, "Password phải có ít nhất 4 ký tự")
-});
 
 export default function Register() {
-  const { register: authRegister } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
+  const [form, setForm] = useState({ username: "", email: "", password: "", confirm: "" });
+  const [error, setError] = useState("");
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
-    resolver: zodResolver(schema)
-  });
-
-  async function onSubmit(values) {
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError("");
+    if (form.password !== form.confirm) {
+      setError("Passwords do not match");
+      return;
+    }
     try {
-      authRegister(values);
-      reset();
-      navigate("/profile");
-    } catch (e) {
-      alert(e.message);
+      await register({ username: form.username, email: form.email, password: form.password });
+      navigate("/");
+    } catch (err) {
+      setError(err.message);
     }
   }
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow mt-6">
-      <h2 className="text-xl font-semibold mb-4">Register</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-sm">
+      <h3 className="text-lg font-semibold mb-2">Sign Up</h3>
+      <p className="text-sm text-gray-500 mb-4">Create an account to access all features.</p>
+
+      <form onSubmit={onSubmit} className="space-y-3">
         <div>
-          <Label>Username</Label>
-          <Input {...register("username")} />
-          {errors.username && <div className="text-xs text-red-600">{errors.username.message}</div>}
+          <label className="block text-sm font-medium">Username</label>
+          <input required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="mt-1 block w-full rounded-lg border px-3 py-2" placeholder="Enter your username" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Email</label>
+          <input required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 block w-full rounded-lg border px-3 py-2" placeholder="m@example.com" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Password</label>
+          <input required type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="mt-1 block w-full rounded-lg border px-3 py-2" placeholder="Enter your password" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Confirm Password</label>
+          <input required type="password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} className="mt-1 block w-full rounded-lg border px-3 py-2" placeholder="Confirm your password" />
         </div>
 
-        <div>
-          <Label>Name</Label>
-          <Input {...register("name")} />
-          {errors.name && <div className="text-xs text-red-600">{errors.name.message}</div>}
-        </div>
+        {error && <div className="text-sm text-red-600">{error}</div>}
 
-        <div>
-          <Label>Email</Label>
-          <Input {...register("email")} />
-          {errors.email && <div className="text-xs text-red-600">{errors.email.message}</div>}
-        </div>
-
-        <div>
-          <Label>Password</Label>
-          <Input type="password" {...register("password")} />
-          {errors.password && <div className="text-xs text-red-600">{errors.password.message}</div>}
-        </div>
-
-        <div className="flex justify-end">
-          <Button type="submit">Register</Button>
-        </div>
+        <button className="w-full bg-indigo-500 text-white py-2 rounded-lg mt-2">Register</button>
       </form>
     </div>
   );

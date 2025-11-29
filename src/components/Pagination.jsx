@@ -1,27 +1,32 @@
 import React from "react";
-import { GhostButton } from "./ui/button";
 
-export default function Pagination({ page, totalPages, onChange }) {
+export default function Pagination({ page, totalPages, onPage }) {
   const pages = [];
   for (let i = 1; i <= totalPages; i++) pages.push(i);
 
   return (
     <div className="flex items-center justify-center gap-2 mt-6">
-      <GhostButton onClick={() => onChange(page - 1)} disabled={page === 1}>
-        ‹
-      </GhostButton>
+      <button
+        onClick={() => onPage(Math.max(1, page - 1))}
+        className="px-3 py-1 rounded-full border"
+      >
+        ◀
+      </button>
       {pages.map((p) => (
         <button
           key={p}
-          onClick={() => onChange(p)}
-          className={`px-3 py-1 rounded border ${p === page ? "bg-sky-600 text-white" : "bg-white text-sm"}`}
+          onClick={() => onPage(p)}
+          className={`w-9 h-9 rounded-full ${p === page ? "bg-indigo-100 text-indigo-700" : "bg-white border"}`}
         >
           {p}
         </button>
       ))}
-      <GhostButton onClick={() => onChange(page + 1)} disabled={page === totalPages}>
-        ›
-      </GhostButton>
+      <button
+        onClick={() => onPage(Math.min(totalPages, page + 1))}
+        className="px-3 py-1 rounded-full border"
+      >
+        ▶
+      </button>
     </div>
   );
 }

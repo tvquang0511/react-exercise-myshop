@@ -1,32 +1,24 @@
 import React from "react";
-import { Card, CardFooter } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
 
-export default function ProductCard({ p }) {
+export default function ProductCard({ product }) {
   return (
-    <Card className="flex flex-col">
-      <div className="h-36 bg-gray-100 flex items-center justify-center rounded">
-        <span className="text-gray-400">300 x 150</span>
+    <div className="bg-white rounded-xl p-4 shadow-sm border">
+      <div className="text-sm font-medium mb-2">{product.title}</div>
+      <div className="bg-gray-100 rounded-md h-36 flex items-center justify-center mb-3">
+        {product.image ? (
+          <img src={product.image} alt={product.title} className="object-contain h-32" />
+        ) : (
+          <div className="text-gray-400">300 × 150</div>
+        )}
       </div>
-
-      <div className="mt-3 flex-1">
-        <div className="flex items-start justify-between">
-          <h3 className="font-semibold text-sm">{p.title}</h3>
-          {p.rating?.rate > 4.5 && <Badge variant="hot">Hot</Badge>}
+      <div className="text-sm text-gray-500 mb-3 line-clamp-2">{product.description}</div>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-lg font-semibold">{product.price} ₫</div>
+          <div className="text-xs text-gray-500">★ {product.rating?.rate ?? "—"} • {product.rating?.count ?? 0} đánh giá</div>
         </div>
-
-        <p className="text-xs text-gray-500 mt-2 line-clamp-3">{p.description}</p>
-
-        <div className="mt-3">
-          <div className="text-lg font-bold">{p.price} đ</div>
-          <div className="text-xs text-yellow-600">★ {p.rating?.rate} · {p.rating?.count} đánh giá</div>
-        </div>
+        <button className="bg-indigo-500 text-white px-3 py-1 rounded-md text-sm">Xem chi tiết</button>
       </div>
-
-      <CardFooter className="flex justify-end">
-        <Button>Xem chi tiết</Button>
-      </CardFooter>
-    </Card>
+    </div>
   );
 }

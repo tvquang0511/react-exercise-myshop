@@ -1,49 +1,45 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import data from "../data";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
-const USERS_KEY = "MYSHOP_USERS";
-const SESSION_KEY = "MYSHOP_SESSION";
-
-function ensureSeedUsers() {
-  const saved = localStorage.getItem(USERS_KEY);
-  if (!saved) {
-    const seed = data.users || [];
-    localStorage.setItem(USERS_KEY, JSON.stringify(seed));
-  }
-}
-
 export function AuthProvider({ children }) {
-  ensureSeedUsers();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const raw = localStorage.getItem("myshop_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
-    const s = localStorage.getItem(SESSION_KEY);
-    if (s) setUser(JSON.parse(s));
-  }, []);
+    if (user) localStorage.setItem("myshop_user", JSON.stringify(user));
+    else localStorage.removeItem("myshop_user");
+  }, [user]);
 
-  function register(newUser) {
-    const users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-    if (users.find((u) => u.username === newUser.username)) {
-      throw new Error("Username already exists");
+  function register({ username, email, password }) {
+    const users = JSON.parse(localStorage.getItem("myshop_users") || "[]");
+    if (users.find((u) => u.username === username || u.email === email)) {
+      throw new Error("Username or email already exists");
     }
+    const newUser = { id: Date.now(), username, email, password };
     users.push(newUser);
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
-    setUser(newUser);
+    localStorage.setItem("myshop_users", JSON.stringify(users));
+    setUser({ id: newUser.id, username: newUser.username, email: newUser.email });
+    return newUser;
   }
 
   function login({ username, password }) {
-    const users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-    const found = users.find((u) => u.username === username && u.password === password);
-    if (!found) throw new Error("Invalid credentials");
-    localStorage.setItem(SESSION_KEY, JSON.stringify(found));
-    setUser(found);
+    const users = JSON.parse(localStorage.getItem("myshop_users") || "[]");
+    const u = users.find((x) => x.username === username && x.password === password);
+    if (!u) {
+      throw new Error("Invalid credentials");
+    }
+    setUser({ id: u.id, username: u.username, email: u.email });
+    return u;
   }
 
   function logout() {
-    localStorage.removeItem(SESSION_KEY);
     setUser(null);
   }
 
