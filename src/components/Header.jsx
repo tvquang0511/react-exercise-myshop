@@ -1,10 +1,32 @@
 import React from "react";
 /*
-  Sử dụng Avatar scaffold của shadcn.
-  Nếu avatar export là default hoặc named, đổi import cho phù hợp.
-  Mình giả định shadcn đã tạo file ở src/components/ui/avatar.js(x)
+  Import mọi thứ từ module avatar để hỗ trợ cả named và default exports.
+  Nếu module không xuất component phù hợp, dùng fallback đơn giản (div).
 */
-import Avatar from "../components/ui/avatar";
+import * as AvatarModule from "../components/ui/avatar";
+
+const AvatarComp = AvatarModule.default ?? AvatarModule.Avatar ?? AvatarModule;
+
+/* Component render Avatar an toàn */
+function RenderAvatar() {
+  // Nếu AvatarComp là function/component, thử render nó.
+  if (typeof AvatarComp === "function") {
+    // Một số scaffold export thêm phụ phần như Avatar.Fallback hoặc AvatarImage
+    const Fallback = AvatarComp.Fallback ?? AvatarModule.AvatarFallback ?? null;
+
+    return (
+      <React.Fragment>
+        {/* Nếu AvatarComp nhận children */}
+        <AvatarComp>
+          {Fallback ? <Fallback>NV</Fallback> : <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">NV</div>}
+        </AvatarComp>
+      </React.Fragment>
+    );
+  }
+
+  // Fallback nếu không có component hợp lệ
+  return <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">NV</div>;
+}
 
 export default function Header() {
   return (
@@ -12,8 +34,7 @@ export default function Header() {
       <div className="text-sm text-gray-500"> </div>
       <div className="flex items-center gap-4">
         <div className="text-sm text-gray-600">NV</div>
-        {/* Avatar từ shadcn */}
-        <Avatar name="Nguyễn Văn A" />
+        <RenderAvatar />
       </div>
     </header>
   );
